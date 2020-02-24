@@ -18,6 +18,9 @@ def get_all_sailors_name_from_boat(conn, b_name):
 def get_all_sailors_name_from_date(conn, date):
     return execute(conn, "SELECT DISTINCT s.sid, s.name, s.age, s.experience FROM (Voyages As v INNER JOIN Sailors AS s ON v.sid = s.sid) WHERE v.date_of_voyage = :date", {'date': date} )
 
+def get_all_sailors_name_from_color(conn, color):
+    return execute(conn, "SELECT DISTINCT s.sid, s.name, s.age, s.experience FROM ((Boats AS b INNER JOIN Voyages As v ON b.bid = v.bid) INNER JOIN Sailors AS s ON v.sid = s.sid) WHERE b.color = :color", {'color': color} )
+
 def views(bp):
     @bp.route("/sailors")
     def _get_all_sailors():
@@ -38,3 +41,10 @@ def views(bp):
             date = request.args.get('date')
             rows = get_all_sailors_name_from_date(conn, date)
         return render_template("table.html", name="Sailors Who Sailed On %s" %date, rows=rows)
+
+    @bp.route("/sailors/who-sailed-on-boat-of-color")
+    def _get_all_sailors_name_from_color():
+        with get_db() as conn:
+            color = request.args.get('color')
+            rows = get_all_sailors_name_from_color(conn, color)
+        return render_template("table.html", name="Sailors who sailed on boat of %s color" %color, rows=rows)
