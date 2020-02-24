@@ -16,4 +16,3 @@ def views(bp):
         with get_db() as conn:
             rows = boats(conn)
         return render_template("table.html", name="boats", rows=rows)
-
