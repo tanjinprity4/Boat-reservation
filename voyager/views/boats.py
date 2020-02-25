@@ -16,6 +16,9 @@ def get_all_boats_from_sailor_name(conn, s_name):
 def get_all_boats_by_popularity(conn):
     return execute(conn, "SELECT b.bid, b.name, b.color, count(v.bid) AS number_of_voyages FROM (Voyages As v INNER JOIN Boats AS b ON v.bid = b.bid) GROUP BY v.bid ORDER BY count(v.bid) desc")
 
+def add_a_boat(conn, name, color):
+    execute(conn, "INSERT INTO Boats(name,color) VALUES (:name,:color) ", {'name': name, 'color': color} )
+
 def views(bp):
     @bp.route("/boats")
     def _boats():
@@ -35,3 +38,16 @@ def views(bp):
         with get_db() as conn:
             rows = get_all_boats_by_popularity(conn)
         return render_template("table.html", name="List of boats by order of popularity", rows=rows)
+
+    @bp.route("/boats/add")
+    def add_boat_page():
+        return render_template("form_boat.html")
+
+    @bp.route("/boats/add/submit", methods = ['POST'])
+    def _add_a_boat():
+        with get_db() as conn:
+            name = request.form['name']
+            color = request.form['color'].lower()
+            add_a_boat(conn, name, color)
+            rows = boats(conn)
+        return render_template("table.html", name="%s Boat Added" %name, rows=rows)
