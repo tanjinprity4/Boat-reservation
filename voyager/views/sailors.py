@@ -22,7 +22,9 @@ def get_all_sailors_name_from_color(conn, color):
     return execute(conn, "SELECT DISTINCT s.sid, s.name, s.age, s.experience FROM ((Boats AS b INNER JOIN Voyages As v ON b.bid = v.bid) INNER JOIN Sailors AS s ON v.sid = s.sid) WHERE b.color = :color", {'color': color} )
 
 def add_a_sailor(conn, name, age, experience):
-    execute(conn, "INSERT INTO Sailors(name,age,experience) VALUES (:name,:age,:experience) ", {'name': name, 'age': age, 'experience': experience } )
+    if name == None or age == None or experience == None or name == "":
+        raise Exception
+    return execute(conn, "INSERT INTO Sailors(name,age,experience) VALUES (:name,:age,:experience) ", {'name': name, 'age': age, 'experience': experience } )
 
 
 def views(bp):
@@ -63,6 +65,9 @@ def views(bp):
             name = request.form['name'].lower()
             age = request.form['age']
             experience = request.form['experience']
-            add_a_sailor(conn, name, age, experience)
+            try:
+                add_a_sailor(conn, name, age, experience)
+            except Exception:
+                return render_template("form_error.html", errors = ["Your record was not added. Check your inputs."])            
             rows = get_all_sailors(conn)
         return render_template("table.html", name="Sailor Added", rows=rows)
